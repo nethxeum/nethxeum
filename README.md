@@ -22,7 +22,6 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers
 - Web: [nethxeum.com](https://nethxeum.com)
 - Mail: [contact@nethxeum.com](mailto:contact@nethxeum.com)
 - GitHub: [https://github.com/nethxeum/nethxeum](https://github.com/nethxeum/nethxeum)
-- Reddit: [r/nethxeum](https://www.reddit.com/r/nethxeum/)
 
 ## Vulnerability response
 
