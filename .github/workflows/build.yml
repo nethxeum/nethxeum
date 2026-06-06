@@ -1,0 +1,33 @@
+name: Build Nethxeum
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential cmake miniupnpc \
+            libunbound-dev libunwind8-dev pkg-config libssl-dev \
+            libzmq3-dev libsodium-dev libhidapi-dev libnorm-dev \
+            libusb-1.0-0-dev libpgm-dev libprotobuf-dev \
+            protobuf-compiler libgcrypt20-dev libboost-all-dev
+
+      - name: Build
+        run: make release -j$(nproc)
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nethxeum-linux-x64
+          path: build/release/bin/
