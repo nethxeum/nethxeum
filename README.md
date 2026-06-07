@@ -1,6 +1,6 @@
 # Nethxeum
 
-Copyright (c) 2024, The Nethxeum Project  
+Copyright (c) 2026, The Nethxeum Project  
 Portions Copyright (c) 2014-2022 The Monero Project  
 Portions Copyright (c) 2012-2013 The Cryptonote developers
 
