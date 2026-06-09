@@ -276,6 +276,7 @@ string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_LOWER)
 # Since ARCH is a cached variable, it will not be set on first cmake invocation.
 if (NOT ARCH_ID)
 if (NOT ARCH OR ARCH STREQUAL "" OR ARCH STREQUAL "native" OR ARCH STREQUAL "default")
+  set(ARCH "x86-64") # nethxeum: default to portable x86-64 build
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "")
     set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
   endif()
