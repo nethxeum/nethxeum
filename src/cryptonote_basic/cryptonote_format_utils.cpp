@@ -1135,7 +1135,9 @@ namespace cryptonote
       case 9:
       case 8:
       case 6:
+      case 5:
       case 3:
+      case 2:
       case 0:
         default_decimal_point = decimal_point;
         break;
@@ -1156,12 +1158,15 @@ namespace cryptonote
     switch (decimal_point)
     {
       case 12:
-        return "nethxeum";
-      case 9:
-        return "millinero";
       case 8:
         return "nethxeum";
+      // nethxeum: 8-decimal sub-units (milli = base-3, micro = base-6).
+      // The legacy 12-decimal offsets (9, 6, 3) are kept for backward compatibility.
+      case 9:
+      case 5:
+        return "millinero";
       case 6:
+      case 2:
         return "micronero";
       case 3:
         return "nanonero";

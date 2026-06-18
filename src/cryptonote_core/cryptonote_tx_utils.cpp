@@ -144,14 +144,15 @@ namespace cryptonote
 
     // nethxeum: Inject emission progress message into coinbase extra
     {
-      const uint64_t MAX_SUPPLY = 42000000ULL * 1000000000000ULL; // 42M NTU in piconero
+      // nethxeum uses 8 decimals (COIN = 10^8) and a fixed cap of MONEY_SUPPLY atomic units
+      const uint64_t MAX_SUPPLY = MONEY_SUPPLY; // 4,200,000,000,000,000 picKatie = 42M NTU
       uint64_t remaining = (already_generated_coins < MAX_SUPPLY) ? (MAX_SUPPLY - already_generated_coins) : 0;
       double pct = (already_generated_coins * 100.0) / MAX_SUPPLY;
-      double remaining_ntu = remaining / 1000000000000.0;
+      double remaining_ntu = remaining / (double)COIN;
 
       std::ostringstream oss;
       oss << "NTU Block #" << height
-          << " | Reward: " << (block_reward / 1000000000000.0) << " NTU"
+          << " | Reward: " << (block_reward / (double)COIN) << " NTU"
           << " | Emitted: " << std::fixed << std::setprecision(2) << pct << "%"
           << " | Remaining: " << std::fixed << std::setprecision(2) << remaining_ntu << " NTU"
           << " | Supply: 42000000 NTU";
@@ -751,13 +752,9 @@ namespace cryptonote
 
   bool get_block_longhash(const Blockchain *pbc, const blobdata& bd, crypto::hash& res, const uint64_t height, const int major_version, const crypto::hash *seed_hash, const int miners)
   {
-    // block 202612 bug workaround
-    if (height == 202612)
-    {
-      static const std::string longhash_202612 = "84f64766475d51837ac9efbef1926486e58563c95a19fef4aec3254f03000000";
-      epee::string_tools::hex_to_pod(longhash_202612, res);
-      return true;
-    }
+    // nethxeum: removed Monero's block 202612 PoW workaround. That hardcoded longhash
+    // applied only to Monero's historical chain; on a fresh chain it would replace the
+    // real RandomX hash at height 202612 with a fixed value, bypassing proof-of-work there.
     if (major_version >= RX_BLOCK_VERSION)
     {
       crypto::hash hash;
