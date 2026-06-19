@@ -70,12 +70,14 @@
 // COIN - number of smallest units in one coin (nethxeum: 8 decimals like Bitcoin)
 #define COIN                                            ((uint64_t)100000000) // pow(10, 8) - picKatie
 
-#define FEE_PER_KB_OLD                                  ((uint64_t)10000000000) // pow(10, 10)
-#define FEE_PER_KB                                      ((uint64_t)2000000000) // 2 * pow(10, 9)
-#define FEE_PER_BYTE                                    ((uint64_t)300000)
-#define DYNAMIC_FEE_PER_KB_BASE_FEE                     ((uint64_t)2000000000) // 2 * pow(10,9)
-#define DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD            ((uint64_t)10000000000000) // 10 * pow(10,12)
-#define DYNAMIC_FEE_PER_KB_BASE_FEE_V5                  ((uint64_t)2000000000 * (uint64_t)CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2 / CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5)
+// Fee constants scaled for 8-decimal COIN (Monero used 12 decimals, ratio = 10^4).
+// FEE_PER_KB: 200,000 picKatie/KB = ~0.002 NTU for a 1 KB tx
+#define FEE_PER_KB_OLD                                  ((uint64_t)1000000)    // was 10^10 (Monero) → /10000
+#define FEE_PER_KB                                      ((uint64_t)200000)     // was 2*10^9 (Monero) → /10000
+#define FEE_PER_BYTE                                    ((uint64_t)30)         // was 300000 (Monero) → /10000
+#define DYNAMIC_FEE_PER_KB_BASE_FEE                     ((uint64_t)200000)     // was 2*10^9 → /10000
+#define DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD            ((uint64_t)1000000000) // 10 NTU reference reward (10^9 picKatie)
+#define DYNAMIC_FEE_PER_KB_BASE_FEE_V5                  ((uint64_t)200000 * (uint64_t)CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2 / CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT         ((uint64_t)3000)
 
 #define ORPHANED_BLOCKS_MAX_COUNT                       100
