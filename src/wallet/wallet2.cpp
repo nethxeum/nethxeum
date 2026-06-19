@@ -9429,7 +9429,11 @@ void wallet2::get_outs(std::vector<std::vector<tools::wallet2::get_outs_entry>> 
       const uint64_t amount = td.is_rct() ? 0 : td.amount();
       std::unordered_set<uint64_t> seen_indices;
       // request more for rct in base recent (locked) coinbases are picked, since they're locked for longer
-      size_t requested_outputs_count = base_requested_outputs_count + (td.is_rct() ? CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW - CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE : 0);
+      // nethxeum: ALL outputs on this chain are coinbase (locked CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW=100 blocks),
+      // including pre-RingCT (HF v1) amounts. Upstream only compensated for the locked recent zone when is_rct(),
+      // assuming non-RCT outputs were old/unlocked. That assumption is false on a young chain where the recent
+      // outputs are locked coinbases, leaving too few usable decoys (-> not_enough_outs_to_mix). Always compensate.
+      size_t requested_outputs_count = base_requested_outputs_count + (CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW - CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE);
       size_t start = req.outputs.size();
       bool use_histogram = amount != 0;
 
@@ -9769,7 +9773,11 @@ void wallet2::get_outs(std::vector<std::vector<tools::wallet2::get_outs_entry>> 
     for(size_t idx: selected_transfers)
     {
       const transfer_details &td = m_transfers[idx];
-      size_t requested_outputs_count = base_requested_outputs_count + (td.is_rct() ? CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW - CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE : 0);
+      // nethxeum: ALL outputs on this chain are coinbase (locked CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW=100 blocks),
+      // including pre-RingCT (HF v1) amounts. Upstream only compensated for the locked recent zone when is_rct(),
+      // assuming non-RCT outputs were old/unlocked. That assumption is false on a young chain where the recent
+      // outputs are locked coinbases, leaving too few usable decoys (-> not_enough_outs_to_mix). Always compensate.
+      size_t requested_outputs_count = base_requested_outputs_count + (CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW - CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE);
       outs.push_back(std::vector<get_outs_entry>());
       outs.back().reserve(fake_outputs_count + 1);
       const rct::key mask = td.is_rct() ? rct::commit(td.amount(), td.m_mask) : rct::zeroCommit(td.amount());
@@ -11571,7 +11579,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
           test_tx, test_ptx, rct_config, use_view_tags);
       else
         transfer_selected(tx_dsts, tx.selected_transfers, fake_outs_count, outs, valid_public_keys_cache, needed_fee, extra,
-          detail::digit_split_strategy, tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD), test_tx, test_ptx, use_view_tags);
+          detail::digit_split_strategy, tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */), test_tx, test_ptx, use_view_tags);
       auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
       needed_fee = calculate_fee(use_per_byte_fee, test_ptx.tx, txBlob.size(), base_fee, fee_quantization_mask);
 
@@ -11615,7 +11623,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
               test_tx, test_ptx, rct_config, use_view_tags);
           else
             transfer_selected(tx_dsts, tx.selected_transfers, fake_outs_count, outs, valid_public_keys_cache, needed_fee, extra,
-              detail::digit_split_strategy, tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD), test_tx, test_ptx, use_view_tags);
+              detail::digit_split_strategy, tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */), test_tx, test_ptx, use_view_tags);
           txBlob = t_serializable_object_to_blob(test_ptx.tx);
           needed_fee = calculate_fee(use_per_byte_fee, test_ptx.tx, txBlob.size(), base_fee, fee_quantization_mask);
           LOG_PRINT_L2("Made an attempt at a  final " << get_weight_string(test_ptx.tx, txBlob.size()) << " tx, with " << print_money(test_ptx.fee) <<
@@ -11702,7 +11710,7 @@ skip_tx:
                         tx.needed_fee,
                         extra,
                         detail::digit_split_strategy,
-                        tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD),
+                        tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */),
                         test_tx,
                         test_ptx,
                         use_view_tags);
@@ -12019,7 +12027,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
           test_tx, test_ptx, rct_config, use_view_tags);
       else
         transfer_selected(tx.dsts, tx.selected_transfers, fake_outs_count, outs, valid_public_keys_cache, needed_fee, extra,
-          detail::digit_split_strategy, tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD), test_tx, test_ptx, use_view_tags);
+          detail::digit_split_strategy, tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */), test_tx, test_ptx, use_view_tags);
       auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
       needed_fee = calculate_fee(use_per_byte_fee, test_ptx.tx, txBlob.size(), base_fee, fee_quantization_mask);
       available_for_fee = test_ptx.fee + test_ptx.change_dts.amount;
@@ -12056,7 +12064,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
             test_tx, test_ptx, rct_config, use_view_tags);
         else
           transfer_selected(tx.dsts, tx.selected_transfers, fake_outs_count, outs, valid_public_keys_cache, needed_fee, extra,
-            detail::digit_split_strategy, tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD), test_tx, test_ptx, use_view_tags);
+            detail::digit_split_strategy, tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */), test_tx, test_ptx, use_view_tags);
         txBlob = t_serializable_object_to_blob(test_ptx.tx);
         needed_fee = calculate_fee(use_per_byte_fee, test_ptx.tx, txBlob.size(), base_fee, fee_quantization_mask);
         LOG_PRINT_L2("Made an attempt at a final " << get_weight_string(test_ptx.tx, txBlob.size()) << " tx, with " << print_money(test_ptx.fee) <<
@@ -12095,7 +12103,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
         test_tx, test_ptx, rct_config, use_view_tags);
     } else {
       transfer_selected(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, valid_public_keys_cache, tx.needed_fee, extra,
-        detail::digit_split_strategy, tx_dust_policy(::config::DEFAULT_DUST_THRESHOLD), test_tx, test_ptx, use_view_tags);
+        detail::digit_split_strategy, tx_dust_policy((uint64_t)200000 /* nethxeum: 0.002 NTU. config::DEFAULT_DUST_THRESHOLD is 2e9 = 20 NTU here (un-rescaled Monero value for COIN=1e12); at HF v1 that swept all change <20 NTU into the fee. Wallet-side only; consensus coinbase decomposition (cryptonote_tx_utils.cpp) is untouched. */), test_tx, test_ptx, use_view_tags);
     }
     auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
     tx.tx = test_tx;
