@@ -32,50 +32,29 @@
 #define nethxeum_DEFAULT_LOG_CATEGORY "blockchain.hardforks"
 
 const hardfork_t mainnet_hard_forks[] = {
-  // version 1 from the start of the blockchain
-  { 1, 1, 0, 1341378000 },
-
-  // version 2 starts from block 1009827, which is on or around the 20th of March, 2016. Fork time finalised on 2015-09-20. No fork voting occurs for the v2 fork.
-  { 2, 1009827, 0, 1442763710 },
-
-  // version 3 starts from block 1141317, which is on or around the 24th of September, 2016. Fork time finalised on 2016-03-21.
-  { 3, 1141317, 0, 1458558528 },
-
-  // version 4 starts from block 1220516, which is on or around the 5th of January, 2017. Fork time finalised on 2016-09-18.
-  { 4, 1220516, 0, 1483574400 },
-
-  // version 5 starts from block 1288616, which is on or around the 15th of April, 2017. Fork time finalised on 2017-03-14.
-  { 5, 1288616, 0, 1489520158 }, 
-
-  // version 6 starts from block 1400000, which is on or around the 16th of September, 2017. Fork time finalised on 2017-08-18.
-  { 6, 1400000, 0, 1503046577 },
-
-  // version 7 starts from block 1546000, which is on or around the 6th of April, 2018. Fork time finalised on 2018-03-17.
-  { 7, 1546000, 0, 1521303150 },
-
-  // version 8 starts from block 1685555, which is on or around the 18th of October, 2018. Fork time finalised on 2018-09-02.
-  { 8, 1685555, 0, 1535889547 },
-
-  // version 9 starts from block 1686275, which is on or around the 19th of October, 2018. Fork time finalised on 2018-09-02.
-  { 9, 1686275, 0, 1535889548 },
-
-  // version 10 starts from block 1788000, which is on or around the 9th of March, 2019. Fork time finalised on 2019-02-10.
-  { 10, 1788000, 0, 1549792439 },
-
-  // version 11 starts from block 1788720, which is on or around the 10th of March, 2019. Fork time finalised on 2019-02-15.
-  { 11, 1788720, 0, 1550225678 },
-
-  // version 12 starts from block 1978433, which is on or around the 30th of November, 2019. Fork time finalised on 2019-10-18.
-  { 12, 1978433, 0, 1571419280 },
-
-  { 13, 2210000, 0, 1598180817 },
-  { 14, 2210720, 0, 1598180818 },
-
-  { 15, 2688888, 0, 1656629117 },
-  { 16, 2689608, 0, 1656629118 },
+  // Nethxeum mainnet — launched May 31, 2026.
+  // Blocks 1-2699: hardfork v1 (existing chain preserved).
+  // Blocks 2700+: rapid succession upgrade to activate all protocol features.
+  // Miners and nodes must upgrade before block 2700 (~June 21, 2026).
+  { 1,  1,    0, 1748649600 }, // genesis
+  { 2,  2700, 0, 1748649601 }, // CryptoNote improvements
+  { 3,  2701, 0, 1748649602 }, // bulletproofs preparation
+  { 4,  2702, 0, 1748649603 }, // RingCT mandatory, dynamic fee
+  { 5,  2703, 0, 1748649604 }, // larger block median
+  { 6,  2704, 0, 1748649605 }, // sorted inputs
+  { 7,  2705, 0, 1748649606 }, // RandomX PoW
+  { 8,  2706, 0, 1748649607 }, // bulletproofs, per-byte fee
+  { 9,  2707, 0, 1748649608 }, // bulletproofs non-optional
+  { 10, 2708, 0, 1748649609 }, // bulletproofs v2
+  { 11, 2709, 0, 1748649610 }, // CLSAG ring signatures
+  { 12, 2710, 0, 1748649611 }, // bulletproofs+ preparation
+  { 13, 2711, 0, 1748649612 }, // bulletproofs+
+  { 14, 2712, 0, 1748649613 }, // view tags
+  { 15, 2713, 0, 1748649614 }, // 2021 fee scaling
+  { 16, 2714, 0, 1748649615 }, // bulletproofs+ non-optional
 };
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
-const uint64_t mainnet_hard_fork_version_1_till = 1009826;
+const uint64_t mainnet_hard_fork_version_1_till = 2699;
 
 const hardfork_t testnet_hard_forks[] = {
   // version 1 from the start of the blockchain
