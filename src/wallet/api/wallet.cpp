@@ -1787,13 +1787,39 @@ PendingTransaction *WalletImpl::createTransactionMultDest(const std::vector<stri
                       print_money(e.fee());
             setStatusError(writer.str());
         } catch (const tools::error::not_enough_outs_to_mix& e) {
-            std::ostringstream writer;
-            writer << tr("not enough outputs for specified ring size") << " = " << (e.mixin_count() + 1) << ":";
-            for (const std::pair<uint64_t, uint64_t> outs_for_amount : e.scanty_outs()) {
-                writer << "\n" << tr("output amount") << " = " << print_money(outs_for_amount.first) << ", " << tr("found outputs to use") << " = " << outs_for_amount.second;
+            // nethxeum: pre-RCT outputs (amount != 0) have insufficient denomination decoys
+            // at HF v16. Retry with mixin=0 (v1 tx) which the consensus allows for unmixable
+            // inputs (n_outputs <= 15 per denomination). RCT inputs (amount == 0) can always
+            // find decoys, so only retry when ALL scanty amounts are non-zero (pre-RCT).
+            bool all_pre_rct = true;
+            for (const std::pair<uint64_t, uint64_t>& p : e.scanty_outs())
+                if (p.first == 0) { all_pre_rct = false; break; }
+
+            bool retried_ok = false;
+            if (all_pre_rct) {
+                try {
+                    if (amount) {
+                        transaction->m_pending_tx = m_wallet->create_transactions_2(dsts, 0,
+                                                                                    adjusted_priority,
+                                                                                    extra, subaddr_account, subaddr_indices);
+                    } else {
+                        transaction->m_pending_tx = m_wallet->create_transactions_all(0, info.address, info.is_subaddress, 1, 0,
+                                                                                      adjusted_priority,
+                                                                                      extra, subaddr_account, subaddr_indices);
+                    }
+                    pendingTxPostProcess(transaction);
+                    retried_ok = true;
+                } catch (...) {}
             }
-            writer << "\n" << tr("Please sweep unmixable outputs.");
-            setStatusError(writer.str());
+            if (!retried_ok) {
+                std::ostringstream writer;
+                writer << tr("not enough outputs for specified ring size") << " = " << (e.mixin_count() + 1) << ":";
+                for (const std::pair<uint64_t, uint64_t> outs_for_amount : e.scanty_outs()) {
+                    writer << "\n" << tr("output amount") << " = " << print_money(outs_for_amount.first) << ", " << tr("found outputs to use") << " = " << outs_for_amount.second;
+                }
+                writer << "\n" << tr("Please sweep unmixable outputs.");
+                setStatusError(writer.str());
+            }
         } catch (const tools::error::tx_not_constructed&) {
             setStatusError(tr("transaction was not constructed"));
         } catch (const tools::error::tx_rejected& e) {
